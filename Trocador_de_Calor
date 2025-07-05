@@ -1,0 +1,36 @@
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+rho = 1000 # kg/m³
+cp = 4200 # J/(kg.K)
+Te = 353 # K
+Tc = 310 # K
+R = 0.1 # m
+deltax = 1 # m
+A = 2*3.14*R*deltax # m²
+V = deltax * 3.14 * R ** 2 # m³
+q = 0.01 # m³/min
+U = 8000 #J/(m².K)
+
+#condições iniciais, partindo do estado estacionário
+
+T10 = 346.26
+T20 = 340.25
+T30 = 334.88
+
+def funcaoTC(M,t):
+    T1, T2, T3 = M
+    dT1_dt = (rho*q*cp*(Te-T1) + U*A*(Tc - T1))/(rho*V*cp)
+    dT2_dt = (rho*q*cp*(T1-T2) + U*A*(Tc - T2))/(rho*V*cp)
+    dT3_dt = (rho*q*cp*(T2-T3) + U*A*(Tc - T3))/(rho*V*cp)
+    return (dT1_dt,dT2_dt,dT3_dt)
+
+t = np.linspace(0,20,num=30)
+M = odeint(funcaoTC,[T10,T20,T30],t)
+
+plt.plot(t,M[:,0], label="L1")
+plt.plot(t,M[:,1], label="L2")
+plt.plot(t,M[:,2], label="L3")
+plt.legend()
