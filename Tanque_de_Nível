@@ -1,0 +1,18 @@
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+A = 0.5
+q0 = 1.8
+R = 5.5
+hi = 1.2
+
+def edo_tanque1(h,t):
+    dh_dt = (1/A)*(q0 - h/R)
+    return dh_dt
+
+t = np.linspace(0,10,num=100)
+h = odeint(edo_tanque1, hi,t)
+
+plt.plot(t,h)
