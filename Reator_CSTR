@@ -1,0 +1,40 @@
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+# Duas variáveis de estado T e Ca
+# Tc como variável manipulada
+# Fazer alteração em Tc de 300 para 310 e depois de 300 para 290
+
+q = 100 #L/min
+Cae = 1 #mol/L
+V = 100 #L
+Te = 350 #K
+rho = 1000 #g/L
+Cp = 1.9 #J/(g.K)
+deltaH = 50000 #J/mol (-DeltaH)
+E_R = 8750 # K (E/R)
+k0 = 7.2*10**10 #1/min
+UA = 50000 #J/(min.K)
+Tc = 290 #K
+
+#condições iniciais
+Ca0 = 0.5 #mol/L
+T0 = 350 #K
+
+def funcaoCSTR(y,T):
+    T,Ca = y
+    k = k0*np.exp(-E_R/T)
+    dT_dt = (rho * q * Cp * (Te - T) + UA * (Tc - T) + deltaH * V * k * Ca)/(V * rho * Cp)
+    dCa_dt = (q * (Cae - Ca) - V * k * Ca)/V
+    return [dT_dt, dCa_dt]
+
+t = np.linspace(0,10,num=100)
+y = odeint(funcaoCSTR,[T0,Ca0],t)
+
+T_vetor = y[:,0]
+Ca_vetor = y[:,1]
+
+plt.plot(t, T_vetor)
+plt.plot(t, Ca_vetor)
