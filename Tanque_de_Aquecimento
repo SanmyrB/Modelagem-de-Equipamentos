@@ -1,0 +1,23 @@
+me = 0.21
+m = 0.2
+Te = 40
+Q = -7000 
+rho = 1000
+cp = 4190
+V0 = 2
+T0 = 30
+
+def funcaoBEBM(y, t):
+    V,T = y
+    dV_dt = (me - m) / rho
+    dT_dt = (me / (V * rho)) * (Te - T) + Q / (rho * cp * V)
+    return(dV_dt,dT_dt)
+
+t = np.linspace(0,100000,100)
+y = odeint(funcaoBEBM,[V0,T0],t)
+
+V = y[:,0]
+T = y[:,1]
+
+plt.plot(t,V)
+plt.plot(t,T)
