@@ -1,0 +1,74 @@
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+Tset = 310 #K
+
+# Fluido do proceoo
+rho = 1000 # kg/m³
+q = 0.001 # m³/s
+cp = 4180 # J/(kg.K)
+Te = 300 # K
+V = 0.2 # m³
+
+# Resistência de zinco
+rhor = 7140 # kg/m³
+Vr = 0.0003 # m³
+cpr = 382 # J/(kg.K)
+hr = 1180 # coeficiente de transferência de calor entre o fluido e o metal W/
+Ar = 0.1 # m²
+
+# Condições iniciais
+T0 = 302.39 # K
+Tr0 = 387.14 # K
+
+# Valor inicial da Variável Manipulada
+Q_barra = 10000 # Watts
+
+def FuncaoTanque1 (M,t):
+    T, Tr = M
+    dT_dt = (rho*q*cp*(Te - T) + hr*Ar*(Tr - T))/(rho*V*cp)
+    dTr_dt = (Q - hr*Ar*(Tr - T))/(rhor*Vr*cpr)
+    return(dT_dt, dTr_dt)
+
+num = 10
+delta_t = 50
+t0 = 0
+I = 0
+T_vetor = []
+tempo = []
+M = []
+t_vetor = []
+Kc = 7
+TauI = 0.2
+TauD = 2
+e = 0                                # com erro = 0 não existe ação de controle da 1º interação
+e_anterior = 0
+
+ne = 80
+for i in range(0,ne):
+    P = e
+    I = e*delta_t + I
+    D = (e_anterior)/delta_t
+    Q = Q_barra + Kc*(P + (1/TauI)*I + TauD*D)         #equação do controle PID
+    
+    tf = t0 + delta_t
+    t = np.linspace(t0,tf,num)
+    M = odeint(FuncaoTanque1,[T0, Tr0],t)                    #chama a função com os valores atualizados
+    t0 = tf
+    
+    T = M[:,0]
+    Tr = M[:,1]
+    e = Tset - T[num-1]                                      #calcula o erro atual, T_vetor[num-1] é o último elemento do vetor
+    e_anterior = Tset - T[0]                                 #calcula o erro atual, T_vetor[0] é o primeiro elemento do vetor
+    T0 = T[num-1]
+    Tr0 = Tr[num-1]
+    
+    T_vetor = np.append(T_vetor,T)                           #adiciona o vetor menor T no final do vetor maior T_vetor (Temperatura)
+    t_vetor = np.append(t_vetor,t)                           #adiciona o vetor menor t no final do vetor maior t_vetor (tempo)
+
+plt.plot(t_vetor,T_vetor)
+plt.title("Controle PID da tempratura de um Tanque")
+plt.xlabel("Tempo (s)")
+plt.ylabel("Temperatura (K)")
